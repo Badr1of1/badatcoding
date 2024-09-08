@@ -14,6 +14,13 @@ app.use("/api/interviews", require("./routes/interviews"));
 app.use("/api/auth", require("./routes/auth"));
 app.use('/api/reports', require('./routes/reports'));
 
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+  });
+});
+
 const port = process.env.PORT || 5000;
 
 const start = async () => {

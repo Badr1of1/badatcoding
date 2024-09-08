@@ -6,38 +6,31 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-
+    
     if (!user) {
-      return res
-        .status(401)
-        .json({ error: "Login failed! Check authentication credentials" });
+      return res.status(400).json({ error: "Invalid email or password." });
     }
-
-    const isPassMatch = await bcrypt.compare(password, user.password);
-    if (!isPassMatch) {
-      return res.status(401).json({ error: "Login failed! Check password" });
+    
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({ error: "Invalid email or password." });
     }
-    const token = jwt.sign(
-      { _id: user._id.toString() },
-      process.env.JWT_SECRET,
-      { expiresIn: "8h" }
-    );
-
-    res.status(200).json({ message: "Login Successful", user, token });
+    
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '8h' });
+    
+    res.status(200).json({ user, token });
   } catch (err) {
-    res.status(400).json({ err });
+    res.status(500).json({ error: "Login failed. Try again." });
   }
 };
 
 const logout = async (req, res) => {
   try {
-    req.user.tokens = req.user.tokens.filter((token) => {
-      return token.token !== req.token;
-    });
+    req.user.tokens = req.user.tokens.filter((token) => token.token !== req.token);
     await req.user.save();
-    res.send();
+    res.status(200).json({ message: "Logged out successfully." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: "Logout failed. Try again." });
   }
 };
 
