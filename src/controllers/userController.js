@@ -5,7 +5,6 @@ exports.registerUser = async (req, res) => {
   try {
     const user = new User(req.body);
     await user.save();
-    // const token = await user.generateAuthToken();
     res.status(201).json({ 
       message: 'User created successfully', 
       user: {
